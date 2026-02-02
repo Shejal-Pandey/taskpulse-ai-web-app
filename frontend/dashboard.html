@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TaskPulse - Manager Dashboard">
+    <title>TaskPulse - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Floating Orbs Background -->
+    <div class="floating-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">📊</div>
+                    <span class="sidebar-logo-text">TaskPulse</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main Menu</div>
+                    <a href="dashboard.html" class="nav-link active">
+                        <span class="nav-link-icon">📈</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="reports.html" class="nav-link">
+                        <span class="nav-link-icon">📋</span>
+                        <span>All Reports</span>
+                    </a>
+                    <a href="submit-report.html" class="nav-link">
+                        <span class="nav-link-icon">✏️</span>
+                        <span>Submit Report</span>
+                    </a>
+                </div>
+
+                <div class="nav-section" id="adminSection" style="display: none;">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="admin.html" class="nav-link">
+                        <span class="nav-link-icon">⚙️</span>
+                        <span>Admin Panel</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">JD</div>
+                    <div class="user-info">
+                        <div class="user-name">John Doe</div>
+                        <div class="user-role">Manager</div>
+                    </div>
+                </div>
+                <button class="btn btn-ghost btn-block mt-md" onclick="auth.logout()">
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle">☰</button>
+                    <h1 class="page-title">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <button class="header-btn" id="refreshBtn" title="Refresh">
+                        🔄
+                    </button>
+                    <button class="header-btn" title="Notifications">
+                        🔔
+                        <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Date Info -->
+                <div class="mb-lg">
+                    <p class="text-muted">Welcome back! Here's your team's activity overview for <strong
+                            id="currentDate"></strong></p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">📊</div>
+                        <div class="stat-value" id="totalReports">-</div>
+                        <div class="stat-label">Total Reports</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-icon success">✅</div>
+                        <div class="stat-value" id="todaySubmissions">-</div>
+                        <div class="stat-label">Today's Submissions</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-icon warning">⏳</div>
+                        <div class="stat-value" id="pendingReview">-</div>
+                        <div class="stat-label">Pending Review</div>
+                    </div>
+                    <div class="stat-card accent">
+                        <div class="stat-icon accent">⏱️</div>
+                        <div class="stat-value" id="avgHours">-</div>
+                        <div class="stat-label">Avg. Hours Worked</div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Recent Activity -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg);">
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Quick Actions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: grid; gap: var(--spacing-md);">
+                                <a href="reports.html" class="btn btn-primary btn-block">
+                                    📋 View All Reports
+                                </a>
+                                <a href="reports.html?status=Submitted" class="btn btn-outline btn-block">
+                                    ⏳ Review Pending Reports
+                                </a>
+                                <a href="submit-report.html" class="btn btn-secondary btn-block">
+                                    ✏️ Submit My Report
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Reports -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Reports</h3>
+                            <a href="reports.html" class="btn btn-ghost btn-sm">View All</a>
+                        </div>
+                        <div class="card-body" id="recentReportsContainer">
+                            <div class="empty-state">
+                                <div class="spinner"></div>
+                                <p class="text-muted mt-md">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today's Submissions -->
+                <div class="card mt-lg">
+                    <div class="card-header">
+                        <h3 class="card-title">Today's Submissions</h3>
+                        <span class="badge badge-primary" id="todayCount">0 reports</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="table" id="todayReportsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Summary</th>
+                                        <th>Hours</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="todayReportsBody">
+                                    <tr>
+                                        <td colspan="5" class="table-empty">
+                                            <div class="spinner" style="margin: 0 auto;"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="modal-overlay" id="reviewModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Review Report</h3>
+                <button class="modal-close" onclick="closeReviewModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="reportDetails"></div>
+                <div class="form-group mt-lg">
+                    <label class="form-label" for="managerNotes">Manager Notes (Optional)</label>
+                    <textarea id="managerNotes" class="form-control" placeholder="Add notes or feedback..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+                <button class="btn btn-success" id="markReviewedBtn">
+                    ✓ Mark as Reviewed
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        // Require authentication
+        if (!auth.requireAuth()) {
+            throw new Error('Not authenticated');
+        }
+
+        // Check if user is manager/admin
+        const user = auth.getUser();
+        if (!auth.isManagerOrAdmin()) {
+            window.location.href = 'submit-report.html';
+        }
+
+        // Show admin section for admins
+        if (auth.isAdmin()) {
+            document.getElementById('adminSection').style.display = 'block';
+        }
+
+        // Set current date
+        document.getElementById('currentDate').textContent = formatDate(new Date(), {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        let currentReportId = null;
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Load stats
+                const statsResponse = await api.getReportStats();
+                if (statsResponse.success) {
+                    const stats = statsResponse.data;
+                    document.getElementById('totalReports').textContent = stats.totalReports || 0;
+                    document.getElementById('todaySubmissions').textContent = stats.todaySubmissions || 0;
+                    document.getElementById('pendingReview').textContent = stats.statusBreakdown?.Submitted || 0;
+                    document.getElementById('avgHours').textContent = stats.averageHoursWorked || 0;
+
+                    // Show notification badge if pending reviews exist
+                    if (stats.statusBreakdown?.Submitted > 0) {
+                        document.getElementById('notificationBadge').style.display = 'block';
+                    }
+                }
+
+                // Load today's reports
+                const today = formatDateForInput(new Date());
+                const todayReportsResponse = await api.getReports({
+                    startDate: today,
+                    endDate: today,
+                    limit: 50
+                });
+
+                if (todayReportsResponse.success) {
+                    const reports = todayReportsResponse.data.reports;
+                    document.getElementById('todayCount').textContent = `${reports.length} reports`;
+                    renderTodayReports(reports);
+                }
+
+                // Load recent reports for sidebar
+                const recentResponse = await api.getReports({ limit: 5 });
+                if (recentResponse.success) {
+                    renderRecentReports(recentResponse.data.reports);
+                }
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showToast('Failed to load dashboard data', 'error');
+            }
+        }
+
+        function renderTodayReports(reports) {
+            const tbody = document.getElementById('todayReportsBody');
+
+            if (reports.length === 0) {
+                tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="table-empty">
+              <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <div class="empty-state-title">No reports yet today</div>
+                <div class="empty-state-text">Reports will appear here as employees submit them</div>
+              </div>
+            </td>
+          </tr>
+        `;
+                return;
+            }
+
+            tbody.innerHTML = reports.map(report => `
+        <tr>
+          <td>
+            <div class="flex items-center gap-md">
+              <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.75rem;">
+                ${getInitials(report.employeeName)}
+              </div>
+              <div>
+                <div class="font-medium">${escapeHtml(report.employeeName)}</div>
+                <div class="text-xs text-muted">${escapeHtml(report.employeeEmail)}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="text-sm">${escapeHtml(truncate(report.workSummary, 60))}</div>
+          </td>
+          <td>${report.hoursWorked}h</td>
+          <td>
+            <span class="badge ${getStatusBadgeClass(report.status)}">
+              <span class="status-dot ${getStatusDotClass(report.status)}"></span>
+              ${report.status}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline" onclick="openReviewModal('${report._id}')">
+              Review
+            </button>
+          </td>
+        </tr>
+      `).join('');
+        }
+
+        function renderRecentReports(reports) {
+            const container = document.getElementById('recentReportsContainer');
+
+            if (reports.length === 0) {
+                container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <div class="empty-state-text">No reports found</div>
+          </div>
+        `;
+                return;
+            }
+
+            container.innerHTML = `
+        <div class="activity-list">
+          ${reports.map(report => `
+            <div class="activity-item">
+              <div class="activity-avatar">${getInitials(report.employeeName)}</div>
+              <div class="activity-content">
+                <div class="activity-text">
+                  <strong>${escapeHtml(report.employeeName)}</strong> submitted a report
+                </div>
+                <div class="activity-time">${getRelativeTime(report.createdAt)}</div>
+              </div>
+              <span class="badge ${getStatusBadgeClass(report.status)}">${report.status}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+        }
+
+        async function openReviewModal(reportId) {
+            currentReportId = reportId;
+
+            try {
+                const response = await api.getReport(reportId);
+                if (response.success) {
+                    const report = response.data.report;
+
+                    document.getElementById('reportDetails').innerHTML = `
+            <div class="mb-lg">
+              <div class="flex items-center gap-md mb-md">
+                <div class="user-avatar">${getInitials(report.employeeName)}</div>
+                <div>
+                  <div class="font-semibold">${escapeHtml(report.employeeName)}</div>
+                  <div class="text-sm text-muted">${escapeHtml(report.employeeEmail)}</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-md">
+              <div class="text-xs text-muted font-semibold mb-xs">DATE</div>
+              <div>${formatDate(report.date)}</div>
+            </div>
+
+            <div class="mb-md">
+              <div class="text-xs text-muted font-semibold mb-xs">WORK SUMMARY</div>
+              <div>${escapeHtml(report.workSummary)}</div>
+            </div>
+
+            <div class="mb-md">
+              <div class="text-xs text-muted font-semibold mb-xs">TASKS COMPLETED</div>
+              <div>
+                ${report.tasksCompleted.map(task => `
+                  <div class="flex items-center gap-sm mb-xs">
+                    <span class="badge badge-secondary">${task.category}</span>
+                    <span>${escapeHtml(task.title)}</span>
+                  </div>
+                `).join('') || '<span class="text-muted">No tasks listed</span>'}
+              </div>
+            </div>
+
+            <div class="flex gap-lg">
+              <div>
+                <div class="text-xs text-muted font-semibold mb-xs">HOURS WORKED</div>
+                <div>${report.hoursWorked} hours</div>
+              </div>
+              <div>
+                <div class="text-xs text-muted font-semibold mb-xs">STATUS</div>
+                <span class="badge ${getStatusBadgeClass(report.status)}">${report.status}</span>
+              </div>
+            </div>
+
+            ${report.blockers ? `
+              <div class="mt-md">
+                <div class="text-xs text-muted font-semibold mb-xs">BLOCKERS</div>
+                <div class="text-danger">${escapeHtml(report.blockers)}</div>
+              </div>
+            ` : ''}
+          `;
+
+                    document.getElementById('managerNotes').value = report.managerNotes || '';
+                    document.getElementById('reviewModal').classList.add('active');
+                }
+            } catch (error) {
+                showToast('Failed to load report details', 'error');
+            }
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.remove('active');
+            currentReportId = null;
+        }
+
+        document.getElementById('markReviewedBtn').addEventListener('click', async () => {
+            if (!currentReportId) return;
+
+            try {
+                showLoading();
+                const managerNotes = document.getElementById('managerNotes').value.trim();
+
+                const response = await api.updateReport(currentReportId, {
+                    status: 'Reviewed',
+                    managerNotes
+                });
+
+                if (response.success) {
+                    showToast('Report marked as reviewed', 'success');
+                    closeReviewModal();
+                    loadDashboard();
+                }
+            } catch (error) {
+                showToast(error.message || 'Failed to update report', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            loadDashboard();
+            showToast('Dashboard refreshed', 'info');
+        });
+
+        // Initial load
+        loadDashboard();
+    </script>
+</body>
+
+</html>

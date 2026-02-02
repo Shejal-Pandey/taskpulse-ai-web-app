@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TaskPulse - Admin Panel">
+    <title>TaskPulse - Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Floating Orbs Background -->
+    <div class="floating-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">📊</div>
+                    <span class="sidebar-logo-text">TaskPulse</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main Menu</div>
+                    <a href="dashboard.html" class="nav-link">
+                        <span class="nav-link-icon">📈</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="reports.html" class="nav-link">
+                        <span class="nav-link-icon">📋</span>
+                        <span>All Reports</span>
+                    </a>
+                    <a href="submit-report.html" class="nav-link">
+                        <span class="nav-link-icon">✏️</span>
+                        <span>Submit Report</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="admin.html" class="nav-link active">
+                        <span class="nav-link-icon">⚙️</span>
+                        <span>Admin Panel</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">AD</div>
+                    <div class="user-info">
+                        <div class="user-name">Admin</div>
+                        <div class="user-role">Admin</div>
+                    </div>
+                </div>
+                <button class="btn btn-ghost btn-block mt-md" onclick="auth.logout()">
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle">☰</button>
+                    <h1 class="page-title">Admin Panel</h1>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Admin Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">👥</div>
+                        <div class="stat-value" id="totalUsers">-</div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-icon success">📊</div>
+                        <div class="stat-value" id="totalReports">-</div>
+                        <div class="stat-label">Total Reports</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-icon warning">🗑️</div>
+                        <div class="stat-value" id="deletableReports">-</div>
+                        <div class="stat-label">Deletable Reports (30+ days)</div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="login-tabs" style="background: transparent; padding: 0; margin: 0;">
+                            <button class="login-tab active" data-tab="users">👥 User Management</button>
+                            <button class="login-tab" data-tab="cleanup">🗑️ Report Cleanup</button>
+                        </div>
+                    </div>
+
+                    <!-- Users Tab -->
+                    <div class="card-body tab-content" id="usersTab">
+                        <div class="filter-bar"
+                            style="background: transparent; padding: 0; margin-bottom: var(--spacing-lg);">
+                            <div class="filter-group">
+                                <label>Role Filter</label>
+                                <select id="roleFilter" class="form-control form-select">
+                                    <option value="">All Roles</option>
+                                    <option value="employee">Employees</option>
+                                    <option value="manager">Managers</option>
+                                    <option value="admin">Admins</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Email</th>
+                                        <th>Department</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Joined</th>
+                                        <th>Last Login</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <tr>
+                                        <td colspan="7" class="table-empty">
+                                            <div class="spinner" style="margin: 0 auto;"></div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Cleanup Tab -->
+                    <div class="card-body tab-content hidden" id="cleanupTab">
+                        <div class="mb-lg"
+                            style="background: var(--warning-50); padding: var(--spacing-lg); border-radius: var(--radius-lg); border: 1px solid var(--warning-500);">
+                            <h4 class="font-semibold" style="color: var(--warning-600);">⚠️ Report Cleanup</h4>
+                            <p class="text-sm mt-sm">Only reports older than 30 days can be deleted. This action cannot
+                                be undone.</p>
+                        </div>
+
+                        <div class="filter-bar"
+                            style="background: transparent; padding: 0; margin-bottom: var(--spacing-lg);">
+                            <div class="filter-group">
+                                <label>Date Before</label>
+                                <input type="date" id="deleteDateBefore" class="form-control">
+                            </div>
+                            <div class="filter-group">
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary" id="findDeletableBtn">Find Deletable Reports</button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <input type="checkbox" id="selectAllDeletable">
+                                        </th>
+                                        <th>Report ID</th>
+                                        <th>Employee</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deletableTableBody">
+                                    <tr>
+                                        <td colspan="6" class="table-empty">
+                                            <p class="text-muted">Click "Find Deletable Reports" to load reports older
+                                                than 30 days</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-lg flex gap-md">
+                            <button class="btn btn-danger" id="deleteSelectedBtn" disabled>
+                                🗑️ Delete Selected Reports
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Future Scope -->
+                <div class="card mt-lg">
+                    <div class="card-header">
+                        <h3 class="card-title">🚀 Future Enhancements</h3>
+                    </div>
+                    <div class="card-body">
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg);">
+                            <div
+                                style="padding: var(--spacing-lg); background: var(--secondary-50); border-radius: var(--radius-lg);">
+                                <div class="font-semibold mb-sm">📧 Email Reminders</div>
+                                <p class="text-sm text-muted">Automated daily reminders for employees who haven't
+                                    submitted reports</p>
+                                <span class="badge badge-secondary mt-sm">Coming Soon</span>
+                            </div>
+                            <div
+                                style="padding: var(--spacing-lg); background: var(--secondary-50); border-radius: var(--radius-lg);">
+                                <div class="font-semibold mb-sm">📊 Google Sheets Export</div>
+                                <p class="text-sm text-muted">Export reports to Google Sheets for external analysis</p>
+                                <span class="badge badge-secondary mt-sm">Coming Soon</span>
+                            </div>
+                            <div
+                                style="padding: var(--spacing-lg); background: var(--secondary-50); border-radius: var(--radius-lg);">
+                                <div class="font-semibold mb-sm">🗂️ Data Retention Control</div>
+                                <p class="text-sm text-muted">Configure automatic data retention and cleanup policies
+                                </p>
+                                <span class="badge badge-secondary mt-sm">Coming Soon</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">⚠️ Confirm Deletion</h3>
+                <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteCount">0</strong> report(s)?</p>
+                <p class="text-danger mt-md">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete Reports</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        // Require admin authentication
+        if (!auth.requireAuth()) {
+            throw new Error('Not authenticated');
+        }
+
+        if (!auth.isAdmin()) {
+            showToast('Access denied. Admin only.', 'error');
+            setTimeout(() => {
+                window.location.href = auth.isManagerOrAdmin() ? 'dashboard.html' : 'reports.html';
+            }, 1500);
+            throw new Error('Not admin');
+        }
+
+        let allUsers = [];
+        let deletableReports = [];
+        let selectedReportIds = [];
+
+        // Tab switching
+        const tabs = document.querySelectorAll('.login-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                tabContents.forEach(content => {
+                    content.classList.add('hidden');
+                    if (content.id === `${tabName}Tab`) {
+                        content.classList.remove('hidden');
+                    }
+                });
+            });
+        });
+
+        // Load admin data
+        async function loadAdminData() {
+            try {
+                // Load users
+                const usersResponse = await api.getAllUsers();
+                if (usersResponse.success) {
+                    allUsers = usersResponse.data.users;
+                    document.getElementById('totalUsers').textContent = allUsers.length;
+                    renderUsers(allUsers);
+                }
+
+                // Load stats
+                const statsResponse = await api.getReportStats();
+                if (statsResponse.success) {
+                    document.getElementById('totalReports').textContent = statsResponse.data.totalReports || 0;
+                }
+
+                // Calculate deletable reports (this is an estimate)
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                const oldReportsResponse = await api.getReports({
+                    endDate: formatDateForInput(thirtyDaysAgo),
+                    limit: 100
+                });
+                if (oldReportsResponse.success) {
+                    document.getElementById('deletableReports').textContent = oldReportsResponse.total || 0;
+                }
+
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                showToast('Failed to load admin data', 'error');
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+
+            if (users.length === 0) {
+                tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="table-empty">No users found</td>
+          </tr>
+        `;
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+        <tr>
+          <td>
+            <div class="flex items-center gap-sm">
+              <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.75rem;">
+                ${getInitials(user.name)}
+              </div>
+              <div class="font-medium">${escapeHtml(user.name)}</div>
+            </div>
+          </td>
+          <td class="text-sm">${escapeHtml(user.email)}</td>
+          <td>${escapeHtml(user.department || 'N/A')}</td>
+          <td>
+            <span class="badge ${user.role === 'admin' ? 'badge-danger' : user.role === 'manager' ? 'badge-primary' : 'badge-secondary'}">
+              ${capitalize(user.role)}
+            </span>
+          </td>
+          <td>
+            <span class="badge ${user.isActive ? 'badge-success' : 'badge-warning'}">
+              ${user.isActive ? 'Active' : 'Inactive'}
+            </span>
+          </td>
+          <td class="text-sm">${formatDate(user.createdAt)}</td>
+          <td class="text-sm">${user.lastLogin ? getRelativeTime(user.lastLogin) : 'Never'}</td>
+        </tr>
+      `).join('');
+        }
+
+        // Role filter
+        document.getElementById('roleFilter').addEventListener('change', (e) => {
+            const role = e.target.value;
+            const filtered = role ? allUsers.filter(u => u.role === role) : allUsers;
+            renderUsers(filtered);
+        });
+
+        // Find deletable reports
+        document.getElementById('findDeletableBtn').addEventListener('click', async () => {
+            try {
+                showLoading();
+                const dateBefore = document.getElementById('deleteDateBefore').value;
+
+                // Default to 30 days ago
+                let endDate = dateBefore;
+                if (!endDate) {
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    endDate = formatDateForInput(thirtyDaysAgo);
+                    document.getElementById('deleteDateBefore').value = endDate;
+                }
+
+                const response = await api.getReports({
+                    endDate,
+                    limit: 100
+                });
+
+                if (response.success) {
+                    deletableReports = response.data.reports;
+                    renderDeletableReports(deletableReports);
+                }
+            } catch (error) {
+                showToast('Failed to find deletable reports', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        function renderDeletableReports(reports) {
+            const tbody = document.getElementById('deletableTableBody');
+
+            if (reports.length === 0) {
+                tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="table-empty">No deletable reports found for the selected date range</td>
+          </tr>
+        `;
+                return;
+            }
+
+            tbody.innerHTML = reports.map(report => `
+        <tr>
+          <td>
+            <input type="checkbox" class="report-checkbox" data-id="${report._id}">
+          </td>
+          <td class="font-mono text-sm">${escapeHtml(report.reportId)}</td>
+          <td>${escapeHtml(report.employeeName)}</td>
+          <td>${formatDate(report.date)}</td>
+          <td>
+            <span class="badge ${getStatusBadgeClass(report.status)}">${report.status}</span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-danger" onclick="deleteReport('${report._id}', '${escapeHtml(report.reportId)}')">
+              Delete
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+            // Add checkbox listeners
+            const checkboxes = document.querySelectorAll('.report-checkbox');
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateSelectedCount);
+            });
+        }
+
+        // Select all
+        document.getElementById('selectAllDeletable').addEventListener('change', (e) => {
+            const checkboxes = document.querySelectorAll('.report-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = e.target.checked;
+            });
+            updateSelectedCount();
+        });
+
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.report-checkbox:checked');
+            selectedReportIds = Array.from(checkboxes).map(cb => cb.dataset.id);
+            const deleteBtn = document.getElementById('deleteSelectedBtn');
+            deleteBtn.disabled = selectedReportIds.length === 0;
+            deleteBtn.textContent = `🗑️ Delete Selected (${selectedReportIds.length})`;
+        }
+
+        // Delete selected
+        document.getElementById('deleteSelectedBtn').addEventListener('click', () => {
+            if (selectedReportIds.length === 0) return;
+            document.getElementById('deleteCount').textContent = selectedReportIds.length;
+            document.getElementById('deleteModal').classList.add('active');
+        });
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            try {
+                showLoading();
+                let successCount = 0;
+                let failCount = 0;
+
+                for (const id of selectedReportIds) {
+                    try {
+                        await api.deleteReport(id, true); // Force delete
+                        successCount++;
+                    } catch (error) {
+                        failCount++;
+                    }
+                }
+
+                showToast(`Deleted ${successCount} reports. ${failCount ? `Failed: ${failCount}` : ''}`, successCount > 0 ? 'success' : 'error');
+                closeDeleteModal();
+
+                // Refresh
+                document.getElementById('findDeletableBtn').click();
+                loadAdminData();
+
+            } catch (error) {
+                showToast('Failed to delete reports', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        async function deleteReport(id, reportId) {
+            if (!confirm(`Are you sure you want to delete report ${reportId}?`)) return;
+
+            try {
+                showLoading();
+                await api.deleteReport(id, true); // Force delete
+                showToast('Report deleted successfully', 'success');
+                document.getElementById('findDeletableBtn').click();
+                loadAdminData();
+            } catch (error) {
+                showToast(error.message || 'Failed to delete report', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Initial load
+        loadAdminData();
+    </script>
+</body>
+
+</html>

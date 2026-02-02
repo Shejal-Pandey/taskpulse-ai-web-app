@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TaskPulse - View Reports">
+    <title>TaskPulse - Reports</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Floating Orbs Background -->
+    <div class="floating-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">📊</div>
+                    <span class="sidebar-logo-text">TaskPulse</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main Menu</div>
+                    <a href="dashboard.html" class="nav-link" id="dashboardLink" style="display: none;">
+                        <span class="nav-link-icon">📈</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="reports.html" class="nav-link active">
+                        <span class="nav-link-icon">📋</span>
+                        <span>Reports</span>
+                    </a>
+                    <a href="submit-report.html" class="nav-link">
+                        <span class="nav-link-icon">✏️</span>
+                        <span>Submit Report</span>
+                    </a>
+                </div>
+
+                <div class="nav-section" id="adminSection" style="display: none;">
+                    <div class="nav-section-title">Admin</div>
+                    <a href="admin.html" class="nav-link">
+                        <span class="nav-link-icon">⚙️</span>
+                        <span>Admin Panel</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar" id="currentUserAvatar">JD</div>
+                    <div class="user-info">
+                        <div class="user-name" id="currentUserName">John Doe</div>
+                        <div class="user-role" id="currentUserRole">Employee</div>
+                    </div>
+                </div>
+                <button class="btn btn-ghost btn-block mt-md" onclick="auth.logout()">
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle">☰</button>
+                    <h1 class="page-title" id="pageTitle">My Reports</h1>
+                </div>
+                <div class="header-right">
+                    <a href="submit-report.html" class="btn btn-primary">
+                        ✏️ New Report
+                    </a>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label>Start Date</label>
+                        <input type="date" id="startDate" class="form-control">
+                    </div>
+                    <div class="filter-group">
+                        <label>End Date</label>
+                        <input type="date" id="endDate" class="form-control">
+                    </div>
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select id="statusFilter" class="form-control form-select">
+                            <option value="">All Statuses</option>
+                            <option value="Submitted">Submitted</option>
+                            <option value="Reviewed">Reviewed</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" id="employeeFilterGroup" style="display: none;">
+                        <label>Employee</label>
+                        <select id="employeeFilter" class="form-control form-select">
+                            <option value="">All Employees</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" style="display: flex; align-items: flex-end; gap: var(--spacing-sm);">
+                        <button class="btn btn-primary" id="applyFilters" style="flex: 1;">
+                            Apply
+                        </button>
+                        <button class="btn btn-secondary" id="clearFilters">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Info -->
+                <div class="flex justify-between items-center mb-md">
+                    <p class="text-sm text-secondary" id="resultsInfo">Loading reports...</p>
+                    <div class="pagination" style="border: none; padding: 0;">
+                        <button class="btn btn-ghost btn-sm" id="prevPage" disabled>← Previous</button>
+                        <span class="page-info" id="pageInfo">Page 1</span>
+                        <button class="btn btn-ghost btn-sm" id="nextPage" disabled>Next →</button>
+                    </div>
+                </div>
+
+                <!-- Reports Table -->
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Report ID</th>
+                                <th id="employeeColumn">Employee</th>
+                                <th>Date</th>
+                                <th>Summary</th>
+                                <th>Hours</th>
+                                <th>Status</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsBody">
+                            <tr>
+                                <td colspan="7" class="table-empty">
+                                    <div class="spinner" style="margin: 0 auto;"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Report Detail Modal -->
+    <div class="modal-overlay" id="reportModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Report Details</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="reportModalBody">
+                <!-- Content loaded dynamically -->
+            </div>
+            <div class="modal-footer" id="reportModalFooter">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                <!-- Dynamic buttons will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Delete Report</h3>
+                <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this report? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-primary" id="confirmDeleteBtn"
+                    style="background-color: var(--error);">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        // Check authentication
+        if (!auth.isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+
+        // Initialize UI
+        const user = auth.getUser();
+        document.getElementById('currentUserName').textContent = user.name;
+        document.getElementById('currentUserRole').textContent = capitalize(user.role);
+        document.getElementById('currentUserAvatar').textContent = getInitials(user.name);
+
+        const isManagerOrAdmin = ['manager', 'admin'].includes(user.role);
+
+        // Show dashboard link for managers
+        if (isManagerOrAdmin) {
+            document.getElementById('dashboardLink').style.display = 'flex';
+            document.getElementById('pageTitle').textContent = 'All Reports';
+            document.getElementById('employeeFilterGroup').style.display = 'block';
+
+            // Load employees for filter
+            loadEmployees();
+        }
+
+        // Show admin section for admins
+        if (auth.isAdmin()) {
+            document.getElementById('adminSection').style.display = 'block';
+        }
+
+        // Hide employee column for employees
+        if (!isManagerOrAdmin) {
+            document.getElementById('employeeColumn').style.display = 'none';
+        }
+
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentReportId = null;
+        let reportToDeleteId = null;
+
+        // Parse URL params for initial filters
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('status')) {
+            document.getElementById('statusFilter').value = urlParams.get('status');
+        }
+
+        // Load employees for filter dropdown
+        async function loadEmployees() {
+            try {
+                const response = await api.getAllUsers();
+                if (response.success) {
+                    const select = document.getElementById('employeeFilter');
+                    response.data.users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user._id;
+                        option.textContent = `${user.name} (${user.email})`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading employees:', error);
+            }
+        }
+
+        // Load reports
+        async function loadReports(page = 1) {
+            try {
+                const filters = {
+                    page,
+                    limit: 10
+                };
+
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                const status = document.getElementById('statusFilter').value;
+                const employeeId = document.getElementById('employeeFilter')?.value;
+
+                if (startDate) filters.startDate = startDate;
+                if (endDate) filters.endDate = endDate;
+                if (status) filters.status = status;
+                if (employeeId) filters.employeeId = employeeId;
+
+                const response = await api.getReports(filters);
+
+                if (response.success) {
+                    const reports = response.data?.reports || [];
+                    const total = response.total || 0;
+                    const pages = response.pages || 1;
+                    const cp = response.currentPage || 1;
+                    currentPage = cp;
+                    totalPages = pages;
+
+                    document.getElementById('resultsInfo').textContent =
+                        `Showing ${reports.length} of ${total} reports`;
+                    document.getElementById('pageInfo').textContent =
+                        `Page ${currentPage} of ${totalPages}`;
+
+                    document.getElementById('prevPage').disabled = currentPage <= 1;
+                    document.getElementById('nextPage').disabled = currentPage >= totalPages;
+
+                    renderReports(reports);
+                }
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                showToast('Failed to load reports', 'error');
+            }
+        }
+
+        function renderReports(reports) {
+            const tbody = document.getElementById('reportsBody');
+
+            if (reports.length === 0) {
+                tbody.innerHTML = `
+          <tr>
+            <td colspan="${isManagerOrAdmin ? 7 : 6}" class="table-empty">
+              <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <div class="empty-state-title">No reports found</div>
+                <div class="empty-state-text">Try adjusting your filters or submit a new report</div>
+                <a href="submit-report.html" class="btn btn-primary mt-md">✏️ Submit Report</a>
+              </div>
+            </td>
+          </tr>
+        `;
+                return;
+            }
+
+            tbody.innerHTML = reports.map(report => {
+                // Handle populated employeeId which can be an object or string
+                const reportEmployeeId = report.employeeId && report.employeeId._id
+                    ? report.employeeId._id
+                    : report.employeeId;
+
+                const isOwner = reportEmployeeId === user.id;
+                const canDelete = auth.isAdmin() || (report.status === 'Submitted' && isOwner);
+
+                return `
+        <tr>
+          <td>
+            <div class="font-mono text-sm" style="color: var(--text-primary); font-weight: 500;">${escapeHtml(report.reportId)}</div>
+          </td>
+          ${isManagerOrAdmin ? `
+            <td>
+              <div class="flex items-center gap-sm">
+                <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.7rem;">
+                  ${getInitials(report.employeeName)}
+                </div>
+                <div>
+                  <div class="font-medium text-sm text-primary">${escapeHtml(report.employeeName)}</div>
+                  <div class="text-xs text-muted" style="font-size: 0.75rem;">${escapeHtml(report.employeeEmail)}</div>
+                </div>
+              </div>
+            </td>
+          ` : ''}
+          <td>
+            <div class="text-sm text-secondary">${formatDate(report.date)}</div>
+          </td>
+          <td>
+            <div class="text-sm text-secondary" style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              ${escapeHtml(report.workSummary)}
+            </div>
+          </td>
+          <td>
+            <div class="font-medium text-sm text-primary">${report.hoursWorked}h</div>
+          </td>
+          <td>
+            <span class="badge ${report.status === 'Submitted' ? 'badge-info' : 'badge-success'}">
+              ${report.status}
+            </span>
+          </td>
+          <td class="text-right">
+             <div class="flex justify-end gap-sm">
+                <button class="btn btn-ghost btn-sm" onclick="viewReport('${report._id}')" title="View Details">
+                   👁️
+                </button>
+                 ${canDelete ? `
+                <button class="btn btn-ghost btn-sm" onclick="promptDeleteReport('${report._id}')" title="Delete Report" style="color: var(--error);">
+                   🗑️
+                </button>
+                ` : ''}
+             </div>
+          </td>
+        </tr>
+      `;
+            }).join('');
+        }
+
+        async function viewReport(id) {
+            currentReportId = id;
+            try {
+                const response = await api.getReport(id);
+                if (response.success) {
+                    const report = response.data.report;
+                    renderReportModal(report);
+                    document.getElementById('reportModal').classList.add('active');
+                }
+            } catch (error) {
+                console.error('Error fetching report:', error);
+                showToast('Failed to fetch report details', 'error');
+            }
+        }
+
+        function renderReportModal(report) {
+            const modalBody = document.getElementById('reportModalBody');
+            const canReview = isManagerOrAdmin && report.status === 'Submitted';
+
+            let tasksHtml = '';
+            if (report.tasksCompleted && report.tasksCompleted.length > 0) {
+                tasksHtml = `
+                    <div class="mb-md">
+                        <h4 class="font-medium mb-sm text-sm text-muted">TASKS COMPLETED</h4>
+                        <ul style="list-style: none; padding: 0;">
+                            ${report.tasksCompleted.map(task => `
+                                <li class="info-box" style="margin-bottom: var(--spacing-sm);">
+                                    <div class="font-medium text-primary">${escapeHtml(task.title)}</div>
+                                    ${task.description ? `<p class="text-sm text-secondary mt-sm">${escapeHtml(task.description)}</p>` : ''}
+                                    <div class="mt-sm">
+                                        <span class="badge badge-info" style="font-size: 0.7rem;">${task.category}</span>
+                                    </div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            modalBody.innerHTML = `
+        <div class="flex justify-between items-center mb-lg">
+          <div>
+            <div class="text-xs text-muted mb-sm">REPORT ID</div>
+            <div class="font-mono font-medium text-primary">${report.reportId}</div>
+          </div>
+           <div>
+            <div class="text-xs text-muted mb-sm text-right">DATE</div>
+            <div class="font-medium text-primary">${formatDate(report.date)}</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-lg mb-lg">
+             <div>
+                <div class="text-xs text-muted mb-sm">EMPLOYEE</div>
+                <div class="flex items-center gap-sm">
+                    <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                        ${getInitials(report.employeeName)}
+                    </div>
+                    <div>
+                        <div class="font-medium text-primary">${escapeHtml(report.employeeName)}</div>
+                        <div class="text-xs text-muted">${escapeHtml(report.employeeEmail)}</div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                 <div class="text-xs text-muted mb-sm">HOURS WORKED</div>
+                 <div class="font-medium text-xl text-primary">${report.hoursWorked}h</div>
+            </div>
+        </div>
+
+        <div class="mb-lg">
+          <h4 class="font-medium mb-sm text-sm text-muted">WORK SUMMARY</h4>
+          <div class="info-box">
+             <p class="text-primary">${escapeHtml(report.workSummary)}</p>
+          </div>
+        </div>
+
+        ${tasksHtml}
+
+        ${report.blockers ? `
+          <div class="mb-lg">
+            <h4 class="font-medium mb-sm text-sm text-muted" style="color: var(--error);">BLOCKERS</h4>
+            <div class="info-box" style="border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
+               <p style="color: #fca5a5;">${escapeHtml(report.blockers)}</p>
+            </div>
+          </div>
+        ` : ''}
+
+        ${report.plannedTomorrow ? `
+          <div class="mb-lg">
+             <h4 class="font-medium mb-sm text-sm text-muted">PLANNED FOR TOMORROW</h4>
+             <div class="info-box">
+                <p class="text-primary">${escapeHtml(report.plannedTomorrow)}</p>
+             </div>
+          </div>
+        ` : ''}
+
+        ${report.reviewedBy ? `
+           <div class="mt-xl pt-lg" style="border-top: 1px solid var(--glass-border);">
+              <div class="flex items-center gap-md">
+                   <div class="text-2xl">✅</div>
+                   <div>
+                       <div class="font-medium text-success">Reviewed by ${escapeHtml(report.reviewedBy.name)}</div>
+                       <div class="text-xs text-muted">on ${formatDate(report.reviewedAt)}</div>
+                   </div>
+              </div>
+              ${report.managerNotes ? `
+                 <div class="mt-md info-box" style="border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05);">
+                    <div class="text-xs text-success mb-sm font-bold">MANAGER NOTES</div>
+                    <p class="text-primary">${escapeHtml(report.managerNotes)}</p>
+                 </div>
+              ` : ''}
+           </div>
+        ` : ''} 
+      `;
+
+            // Setup footer buttons
+            const footer = document.getElementById('reportModalFooter');
+            let buttonsHtml = '<button class="btn btn-secondary" onclick="closeModal()">Close</button>';
+
+            if (canReview) {
+                buttonsHtml += `
+             <button class="btn btn-success" onclick="markAsReviewed('${report._id}')">
+                ✓ Mark as Reviewed
+             </button>
+          `;
+            }
+
+            footer.innerHTML = buttonsHtml;
+        }
+
+        async function markAsReviewed(id) {
+            try {
+                const notes = prompt('Add optional notes for the employee:');
+                const data = {
+                    status: 'Reviewed',
+                    managerNotes: notes || undefined
+                };
+
+                const response = await api.updateReport(id, data);
+
+                if (response.success) {
+                    showToast('Report marked as reviewed', 'success');
+                    closeModal();
+                    loadReports(currentPage); // Reload list to update status
+                }
+            } catch (error) {
+                console.error('Error reviewing report:', error);
+                showToast('Failed to update report status', 'error');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('reportModal').classList.remove('active');
+            currentReportId = null;
+        }
+
+        // Delete Functionality
+        function promptDeleteReport(id) {
+            reportToDeleteId = id;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            reportToDeleteId = null;
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            if (!reportToDeleteId) return;
+
+            try {
+                // For now attempting regular delete, assuming API handles admin check
+                // If we needed force delete, we'd use a different endpoint
+                const response = await api.deleteReport(reportToDeleteId);
+
+                if (response.success) {
+                    showToast('Report deleted successfully', 'success');
+                    closeDeleteModal();
+                    loadReports(currentPage); // Refresh the list
+                } else {
+                    showToast(response.message || 'Failed to delete report', 'error');
+                    closeDeleteModal();
+                }
+            } catch (error) {
+                console.error('Error deleting report:', error);
+                const msg = error.message || 'Failed to delete report';
+                showToast(msg, 'error');
+                closeDeleteModal();
+            }
+        });
+
+        // Event Listeners
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) loadReports(currentPage - 1);
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if (currentPage < totalPages) loadReports(currentPage + 1);
+        });
+
+        document.getElementById('applyFilters').addEventListener('click', () => loadReports(1));
+
+        document.getElementById('clearFilters').addEventListener('click', () => {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('statusFilter').value = '';
+            if (document.getElementById('employeeFilter')) {
+                document.getElementById('employeeFilter').value = '';
+            }
+            loadReports(1);
+        });
+
+        // Initial load
+        loadReports();
+    </script>
+</body>
+
+</html>

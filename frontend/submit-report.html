@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TaskPulse - Submit Daily Report">
+    <title>TaskPulse - Submit Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Floating Orbs Background -->
+    <div class="floating-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">📊</div>
+                    <span class="sidebar-logo-text">TaskPulse</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main Menu</div>
+                    <a href="dashboard.html" class="nav-link" id="dashboardLink" style="display: none;">
+                        <span class="nav-link-icon">📈</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="reports.html" class="nav-link">
+                        <span class="nav-link-icon">📋</span>
+                        <span>My Reports</span>
+                    </a>
+                    <a href="submit-report.html" class="nav-link active">
+                        <span class="nav-link-icon">✏️</span>
+                        <span>Submit Report</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">JD</div>
+                    <div class="user-info">
+                        <div class="user-name">John Doe</div>
+                        <div class="user-role">Employee</div>
+                    </div>
+                </div>
+                <button class="btn btn-ghost btn-block mt-md" onclick="auth.logout()">
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle">☰</button>
+                    <div>
+                        <h1 class="page-title">Submit Daily Report</h1>
+                        <div class="breadcrumb">
+                            <span class="breadcrumb-item">Reports</span>
+                            <span class="breadcrumb-separator">/</span>
+                            <span class="breadcrumb-item" id="reportDate"></span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Existing Report Alert -->
+                <div class="card mb-lg" id="existingReportAlert"
+                    style="display: none; border-color: var(--warning-500);">
+                    <div class="card-body">
+                        <div class="flex items-center gap-md">
+                            <div class="stat-icon warning">📝</div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold">You've already submitted a report today</h4>
+                                <p class="text-sm text-muted mt-xs">You can update your existing report below.</p>
+                            </div>
+                            <span class="badge badge-success" id="existingStatus">Submitted</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📝 Daily Work Report</h3>
+                        <span class="badge badge-primary" id="dateLabel"></span>
+                    </div>
+                    <div class="card-body">
+                        <form id="reportForm">
+                            <!-- Tasks Completed -->
+                            <div class="form-group">
+                                <label class="form-label required">Tasks Completed</label>
+                                <p class="form-hint mb-md">List the tasks you completed today</p>
+                                <div class="task-list" id="taskList">
+                                    <div class="task-item">
+                                        <input type="text" class="form-control task-title"
+                                            placeholder="Task description">
+                                        <select class="form-control form-select task-category">
+                                            <option value="development">Development</option>
+                                            <option value="meeting">Meeting</option>
+                                            <option value="review">Review</option>
+                                            <option value="documentation">Documentation</option>
+                                            <option value="testing">Testing</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                        <button type="button" class="btn btn-ghost btn-icon remove-task-btn"
+                                            onclick="this.parentElement.remove()">✕</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-sm add-task-btn" id="addTaskBtn">
+                                    + Add Task
+                                </button>
+                            </div>
+
+                            <!-- Work Summary -->
+                            <div class="form-group">
+                                <label class="form-label required" for="workSummary">Work Summary</label>
+                                <textarea id="workSummary" class="form-control"
+                                    placeholder="Provide a detailed summary of your work today..." rows="4"
+                                    required></textarea>
+                                <div class="form-hint">Minimum 10 characters. Be specific about what you accomplished.
+                                </div>
+                            </div>
+
+                            <!-- Hours Worked -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label required" for="hoursWorked">Hours Worked</label>
+                                    <input type="number" id="hoursWorked" class="form-control" placeholder="e.g., 8"
+                                        min="0" max="24" step="0.5" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Report Date</label>
+                                    <input type="date" id="reportDateInput" class="form-control" disabled>
+                                </div>
+                            </div>
+
+                            <!-- Blockers -->
+                            <div class="form-group">
+                                <label class="form-label" for="blockers">Blockers / Challenges (Optional)</label>
+                                <textarea id="blockers" class="form-control"
+                                    placeholder="Any blockers or challenges you faced today..." rows="2"></textarea>
+                            </div>
+
+                            <!-- Tomorrow's Plan -->
+                            <div class="form-group">
+                                <label class="form-label" for="plannedTomorrow">Tomorrow's Plan (Optional)</label>
+                                <textarea id="plannedTomorrow" class="form-control"
+                                    placeholder="What do you plan to work on tomorrow..." rows="2"></textarea>
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="flex gap-md justify-between mt-xl">
+                                <a href="reports.html" class="btn btn-secondary">
+                                    Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                    📤 Submit Report
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        // Require authentication
+        if (!auth.requireAuth()) {
+            throw new Error('Not authenticated');
+        }
+
+        // Show dashboard link for managers
+        if (auth.isManagerOrAdmin()) {
+            document.getElementById('dashboardLink').style.display = 'flex';
+        }
+
+        let existingReportId = null;
+        const today = new Date();
+        const todayStr = formatDateForInput(today);
+
+        // Set date labels
+        document.getElementById('reportDate').textContent = formatDate(today);
+        document.getElementById('dateLabel').textContent = formatDate(today, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
+        });
+        document.getElementById('reportDateInput').value = todayStr;
+
+        // Add task button
+        document.getElementById('addTaskBtn').addEventListener('click', () => {
+            const taskList = document.getElementById('taskList');
+            const taskItem = document.createElement('div');
+            taskItem.innerHTML = createTaskItemHTML();
+            const newTask = taskItem.firstElementChild;
+            taskList.appendChild(newTask);
+            newTask.querySelector('.task-title').focus();
+        });
+
+        // Load existing report
+        async function loadExistingReport() {
+            try {
+                const response = await api.getTodayReport();
+                if (response.success && response.data.report) {
+                    const report = response.data.report;
+                    existingReportId = report._id;
+
+                    // Show existing report alert
+                    document.getElementById('existingReportAlert').style.display = 'block';
+                    document.getElementById('existingStatus').textContent = report.status;
+                    document.getElementById('submitBtn').innerHTML = '📤 Update Report';
+
+                    // Pre-fill form
+                    document.getElementById('workSummary').value = report.workSummary || '';
+                    document.getElementById('hoursWorked').value = report.hoursWorked || '';
+                    document.getElementById('blockers').value = report.blockers || '';
+                    document.getElementById('plannedTomorrow').value = report.plannedTomorrow || '';
+
+                    // Pre-fill tasks
+                    if (report.tasksCompleted && report.tasksCompleted.length > 0) {
+                        const taskList = document.getElementById('taskList');
+                        taskList.innerHTML = '';
+                        report.tasksCompleted.forEach(task => {
+                            const taskItem = document.createElement('div');
+                            taskItem.innerHTML = createTaskItemHTML(task);
+                            taskList.appendChild(taskItem.firstElementChild);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading existing report:', error);
+            }
+        }
+
+        // Form submission
+        document.getElementById('reportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const tasksCompleted = parseTasksFromForm(document.getElementById('taskList'));
+            const workSummary = document.getElementById('workSummary').value.trim();
+            const hoursWorked = parseFloat(document.getElementById('hoursWorked').value);
+            const blockers = document.getElementById('blockers').value.trim();
+            const plannedTomorrow = document.getElementById('plannedTomorrow').value.trim();
+
+            // Validation
+            if (tasksCompleted.length === 0) {
+                showToast('Please add at least one task', 'error');
+                return;
+            }
+
+            if (!workSummary || workSummary.length < 10) {
+                showToast('Work summary must be at least 10 characters', 'error');
+                return;
+            }
+
+            if (isNaN(hoursWorked) || hoursWorked < 0 || hoursWorked > 24) {
+                showToast('Hours worked must be between 0 and 24', 'error');
+                return;
+            }
+
+            const reportData = {
+                tasksCompleted,
+                workSummary,
+                hoursWorked,
+                blockers,
+                plannedTomorrow
+            };
+
+            try {
+                showLoading();
+                let response;
+
+                if (existingReportId) {
+                    // Update existing report
+                    response = await api.updateReport(existingReportId, reportData);
+                } else {
+                    // Create new report
+                    response = await api.createReport(reportData);
+                }
+
+                if (response.success) {
+                    showToast(existingReportId ? 'Report updated successfully!' : 'Report submitted successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'reports.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                showToast(error.message || 'Failed to submit report', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Initial load
+        loadExistingReport();
+    </script>
+</body>
+
+</html>

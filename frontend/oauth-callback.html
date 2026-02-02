@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TaskPulse - OAuth Callback">
+    <title>TaskPulse - Signing In...</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .oauth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-xl);
+        }
+
+        .oauth-card {
+            text-align: center;
+            padding: var(--spacing-xl) var(--spacing-2xl);
+        }
+
+        .oauth-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--spacing-lg);
+        }
+
+        .oauth-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .oauth-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .oauth-error {
+            color: var(--error-500);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating Orbs Background -->
+    <div class="floating-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="oauth-container">
+        <div class="login-card oauth-card animate-slideUp">
+            <div class="oauth-spinner" id="spinner"></div>
+            <h2 class="oauth-title" id="title">Signing you in...</h2>
+            <p class="oauth-text" id="message">Please wait while we complete your authentication.</p>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const userParam = urlParams.get('user');
+        const error = urlParams.get('error');
+
+        const titleEl = document.getElementById('title');
+        const messageEl = document.getElementById('message');
+        const spinnerEl = document.getElementById('spinner');
+
+        if (error) {
+            // Handle error
+            spinnerEl.style.display = 'none';
+            titleEl.textContent = 'Authentication Failed';
+            titleEl.classList.add('oauth-error');
+            messageEl.textContent = 'Google sign-in was unsuccessful. Please try again.';
+
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 3000);
+        } else if (token && userParam) {
+            // Successful authentication
+            try {
+                const user = JSON.parse(decodeURIComponent(userParam));
+
+                // Store token and user data
+                localStorage.setItem('taskpulse_token', token);
+                localStorage.setItem('taskpulse_user', JSON.stringify(user));
+
+                titleEl.textContent = 'Welcome, ' + user.name + '!';
+                messageEl.textContent = 'Redirecting to your dashboard...';
+
+                // Redirect based on role
+                setTimeout(() => {
+                    if (['manager', 'admin'].includes(user.role)) {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        window.location.href = 'submit-report.html';
+                    }
+                }, 1500);
+            } catch (e) {
+                spinnerEl.style.display = 'none';
+                titleEl.textContent = 'Authentication Error';
+                titleEl.classList.add('oauth-error');
+                messageEl.textContent = 'Failed to process authentication. Redirecting to login...';
+
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            }
+        } else {
+            // No token or error - redirect to login
+            spinnerEl.style.display = 'none';
+            titleEl.textContent = 'Invalid Request';
+            titleEl.classList.add('oauth-error');
+            messageEl.textContent = 'Redirecting to login page...';
+
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>
